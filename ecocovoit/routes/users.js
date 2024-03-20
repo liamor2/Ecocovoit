@@ -1,13 +1,14 @@
 var express = require('express');
 var router = express.Router();
-var userSchema = require('../schemas').User;
+var userSchema = require('../schemas').User
 
-router.get('/api/users', function(req, res, next) {
-  userSchema.find({}).then(users => {
-    res.status(200).send(users);
-  }).catch(err => {
-    res.status(500).send('Error');
-  });
+
+router.get('/api/users',(req,res) => {
+  userSchema.find({}).then(
+    data => res.send(data)
+  ).catch(
+    err => { throw err; }
+  );
 });
 
 router.get('/api/users/:id', function(req, res, next) {
