@@ -4,6 +4,7 @@ const port = 3001;
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
+app.use(express.static('public'));
 
 
 app.set('view engine', 'ejs');
