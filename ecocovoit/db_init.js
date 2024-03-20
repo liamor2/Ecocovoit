@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const dotenv = require('dotenv');
 
 // Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/ecocovoit').then(() => console.log('Connecté avec succès à MongoDB')).catch((err) => console.error('Erreur lors de la connexion à MongoDB :', err));
+mongoose.connect(process.env.MONGO_URI).then(() => console.log('Connecté avec succès à MongoDB')).catch((err) => console.error('Erreur lors de la connexion à MongoDB :', err));
 
 // Define schemas
 const userSchema = new Schema({
