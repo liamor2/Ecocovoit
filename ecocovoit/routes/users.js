@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var userSchema = require('../schemas').User
 
+router.use(express.json());
+
 
 router.get('/api/users',(req,res) => {
   userSchema.find({}).then(
@@ -11,44 +13,41 @@ router.get('/api/users',(req,res) => {
   );
 });
 
-router.get('/api/users/:id', function(req, res, next) {
-  userSchema.findById(req.params.id, function(err, user) {
-    if (err) {
-      res.status(500).send('Error');
-    } else {
-      res.status(200).send(user);
-    }
+router.get('/api/users/:id', (req, res) => {
+  userSchema.findById(req.params.id).then(user => {
+    res.status(200).send(user);
+  }).catch(err => {
+    res.status(500).send('Error');
   });
 });
 
-router.post('/api/users', function(req, res, next) {
-  var user = new userSchema(req.body);
-  user.save(function(err, user) {
-    if (err) {
-      res.status(500).send('Error');
-    } else {
-      res.status(200).send(user);
-    }
+router.post('/api/users', (req, res) => {
+  var user = new userSchema({
+    email: req.body.email,
+    password: req.body.password,
+    points: req.body.points
+  });
+
+  user.save().then(user => {
+    res.status(200).send(user);
+  }).catch(err => {
+    res.status(500).send('Error');
   });
 });
 
-router.put('/api/users/:id', function(req, res, next) {
-  userSchema.findByIdAndUpdate(req.params.id, req.body, function(err, user) {
-    if (err) {
-      res.status(500).send('Error');
-    } else {
-      res.status(200).send(user);
-    }
+router.put('/api/users/:id', (req, res) => {
+  userSchema.findByIdAndUpdate(req.params.id, req.body, { new: true }).then(user => {
+    res.status(200).send(user);
+  }).catch(err => {
+    res.status(500).send('Error');
   });
 });
 
-router.delete('/api/users/:id', function(req, res, next) {
-  userSchema.findByIdAndRemove(req.params.id, function(err, user) {
-    if (err) {
-      res.status(500).send('Error');
-    } else {
-      res.status(200).send(user);
-    }
+router.delete('/api/users/:id', (req, res) => {
+  userSchema.findByIdAndRemove(req.params.id).then(user => {
+    res.status(200).send(user);
+  }).catch(err => {
+    res.status(500).send('Error');
   });
 });
 
