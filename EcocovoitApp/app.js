@@ -1,9 +1,16 @@
+// Imports
 const express = require('express');
 const app = express();
-const host = '127.0.0.1';
-const port = 3001;
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
+
+// Constants
+const host = '127.0.0.1';
+const port = 3001;
+
+// Load environment variables
 dotenv.config();
 
 // Router requires
@@ -12,8 +19,9 @@ const tripsRouter = require('./routes/trips');
 const usersRouter = require('./routes/users');
 const vehicleRouter = require('./routes/vehicle');
 
+// Middleware
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(express.static('public'));
-
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 
@@ -32,7 +40,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/', indexRouter, tripsRouter, usersRouter, vehicleRouter);
 
 
-
+// Start the server
 app.listen(port, host, () => {
   console.log(`Server running at http://${host}:${port}/`);
 });

@@ -61,3 +61,95 @@ router.delete('/api/trips/:id', (req, res) => {
 });
 
 module.exports = router;
+
+/**
+ * @swagger
+ * tags:
+ *  name: Trips
+ *  description: Trip management
+/**
+ * @swagger
+ * /api/trips:
+ *   get:
+ *     tags:
+ *       - Trips
+ *     description: Get all trips
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *       '500':
+ *         description: Error
+ *   post:
+ *     tags:
+ *       - Trips
+ *     description: Create a new trip
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Trip'
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *       '500':
+ *         description: Error
+ *
+ * /api/trips/{id}:
+ *   get:
+ *     tags:
+ *       - Trips
+ *     description: Get a trip by ID
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the trip
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *       '500':
+ *         description: Error
+ *   put:
+ *     tags:
+ *       - Trips
+ *     description: Update a trip by ID
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the trip
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Trip'
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *       '500':
+ *         description: Error
+ *   delete:
+ *     tags:
+ *       - Trips
+ *     description: Delete a trip by ID
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the trip
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *       '404':
+ *         description: Trip not found
+ *       '500':
+ *         description: Error
+ */
