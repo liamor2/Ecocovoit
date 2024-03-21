@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const host = '127.0.0.1';
 const port = 3001;
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -31,7 +32,7 @@ app.use('/', indexRouter, tripsRouter, usersRouter);
 
 
 
-app.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
+app.listen(port, host, () => {
+  console.log(`Server running at http://${host}:${port}/`);
 });
 

@@ -1,48 +1,25 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
+const { User, Trip, Vehicle } = require('./schemas');
+
+dotenv.config();
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI).then(() => console.log('Connecté avec succès à MongoDB')).catch((err) => console.error('Erreur lors de la connexion à MongoDB :', err));
 
-// Define schemas
-const userSchema = new Schema({
-  email: String,
-  password: String,
-  points: Number,
-  trips: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Trip'
-  }]
-});
-
-const tripSchema = new Schema({
-  departureLocation: String,
-  departureTime: Date,
-  destinationLocation: String,
-  destinationTime: Date,
-  date: Date,
-  seats: Number,
-  driver: {
-    type: Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  passengers: [{
-    type: Schema.Types.ObjectId,
-    ref: 'User'
-  }]
-});
-
 // Create models
 const User = mongoose.model('User', userSchema);
 const Trip = mongoose.model('Trip', tripSchema);
+const Vehicle = mongoose.model('Vehicle', vehicleSchema);
 
 // Create example users
 async function createExampleData() {
   const users = await User.insertMany([
-    { email: "john.doe@example.com", password: "hashed_password_here", points: 120 },
-    { email: "jane.doe@example.com", password: "hashed_password_here", points: 150 },
-    { email: "alex.smith@example.com", password: "hashed_password_here", points: 200 }
+    { username: 'John Shepard', email: 'john.shepard@gmail.com', address: '123 Main St, City A', password: await bcrypt.hash('password1', 10), points: 0, role: 0 },
+    { username: 'Jane Shepard', email: 'jane.shepard@gmail.com', address: '456 Elm St, City B', password: await bcrypt.hash('password2', 10), points: 0, role: 0 },
+    { username: 'Alex Smith', email: 'alex.smith@gmail.com', address: '789 Oak St, City C', password: await bcrypt.hash('password3', 10), points: 0, role: 0 }
   ]);
 
   // Create example trips with references to the created users
@@ -69,10 +46,50 @@ async function createExampleData() {
     }
   ]);
 
+  const vehicles = await Vehicle.insertMany([
+    {
+      name: 'Car 1',
+      seats: 4,
+      options: ['Air conditioning'],
+      owner: users[0]._id
+    },
+    {
+      name: 'Car 2',
+      seats: 2,
+      options: ['Heated seats'],
+      owner: users[1]._id
+    },
+    {
+      name: 'Car 3',
+      seats: 6,
+      options: ['Air conditioning', 'Heated seats'],
+      owner: users[1]._id
+    }
+  ]);
+
   // Update users with their trips
   await Promise.all(users.map(async (user, index) => {
     user.trips = trips.filter(trip => trip.driver.toString() === user._id.toString()).map(trip => trip._id);
     await user.save();
+  }));
+
+  // Update users with their vehicles
+  await Promise.all(users.map(async (user, index) => {
+    user.vehicles = vehicles.filter(vehicle => vehicle.owner.toString() === user._id.toString()).map(vehicle => vehicle._id);
+    await user.save();
+  }));
+
+  // Update vehicles with their owner
+  await Promise.all(vehicles.map(async (vehicle, index) => {
+    vehicle.owner = users.find(user => user._id.toString() === vehicle.owner.toString())._id;
+    await vehicle.save();
+  }));
+
+  // Update trips with their driver and passengers
+  await Promise.all(trips.map(async (trip, index) => {
+    trip.driver = users.find(user => user._id.toString() === trip.driver.toString())._id;
+    trip.passengers = trip.passengers.map(passenger => users.find(user => user._id.toString() === passenger.toString())._id);
+    await trip.save();
   }));
 
   console.log('Example data has been added to the ecocovoit database.');
