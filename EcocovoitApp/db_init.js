@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const { User, Trip, Vehicle } = require('./schemas');
 
@@ -9,17 +8,15 @@ dotenv.config();
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI).then(() => console.log('Connecté avec succès à MongoDB')).catch((err) => console.error('Erreur lors de la connexion à MongoDB :', err));
 
-// Create models
-const User = mongoose.model('User', userSchema);
-const Trip = mongoose.model('Trip', tripSchema);
-const Vehicle = mongoose.model('Vehicle', vehicleSchema);
+var salt = bcrypt.genSaltSync(10);
 
-// Create example users
 async function createExampleData() {
+
+  // Create example users
   const users = await User.insertMany([
-    { username: 'John Shepard', email: 'john.shepard@gmail.com', address: '123 Main St, City A', password: await bcrypt.hash('password1', 10), points: 0, role: 0 },
-    { username: 'Jane Shepard', email: 'jane.shepard@gmail.com', address: '456 Elm St, City B', password: await bcrypt.hash('password2', 10), points: 0, role: 0 },
-    { username: 'Alex Smith', email: 'alex.smith@gmail.com', address: '789 Oak St, City C', password: await bcrypt.hash('password3', 10), points: 0, role: 0 }
+    { username: 'John Shepard', email: 'john.shepard@gmail.com', address: '123 Main St, City A', password: await bcrypt.hash('password1', salt), points: 0, role: 1 },
+    { username: 'Jane Shepard', email: 'jane.shepard@gmail.com', address: '456 Elm St, City B', password: await bcrypt.hash('password2', salt), points: 0, role: 0 },
+    { username: 'Alex Smith', email: 'alex.smith@gmail.com', address: '789 Oak St, City C', password: await bcrypt.hash('password3', salt), points: 0, role: 0 }
   ]);
 
   // Create example trips with references to the created users
