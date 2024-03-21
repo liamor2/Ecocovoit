@@ -66,3 +66,8 @@
 - Created the work log file.
 - Modified the db_init.js file to include the new changes in the schemas.
 - Renamed the Ecocovoit folder to EcocovoitApp.
+- Minor correction due to a bug with bcrypt, switched to bcryptjs.
+- Added the bcryptjs package to the project.
+- Added the vehicle collection to the db_init.js file.
+- Added the vehicle.js file to the routes folder.
+- Added the vehicle routes to the app.js file.

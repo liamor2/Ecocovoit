@@ -10,6 +10,7 @@ dotenv.config();
 const indexRouter = require('./routes/index');
 const tripsRouter = require('./routes/trips');
 const usersRouter = require('./routes/users');
+const vehicleRouter = require('./routes/vehicle');
 
 app.use(express.static('public'));
 
@@ -28,7 +29,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('Could not connect to MongoDB', err));
 
 // Use the routers
-app.use('/', indexRouter, tripsRouter, usersRouter);
+app.use('/', indexRouter, tripsRouter, usersRouter, vehicleRouter);
 
 
 
