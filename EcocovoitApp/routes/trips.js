@@ -67,6 +67,9 @@ module.exports = router;
  * tags:
  *  name: Trips
  *  description: Trip management
+ * 
+ */
+ 
 /**
  * @swagger
  * /api/trips:
