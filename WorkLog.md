@@ -20,7 +20,7 @@
     "role": "number",
     "Trips": [
       {
-        <!-- link to the trip collection -->
+        <!-- id of a trip object -->
       }
     ]
   }
@@ -35,7 +35,7 @@
     "seats": "number",
     "options": ["string"],
     "owner": {
-      <!-- link to the user collection -->
+      <!-- id of a user object -->
     }
   }
   ```
@@ -52,13 +52,13 @@
     "seats": "number",
     "done": "boolean",
     "driver": {
-      <!-- link to the user collection -->
+      <!-- id of a user object -->
     },
     "passengers": [
-      <!-- link to the user collection -->
+      <!-- id of a user object -->
     ],
     "vehicle": {
-      <!-- link to the vehicle collection -->
+      <!-- id of a vehicle object -->
     }
   }
   ```
