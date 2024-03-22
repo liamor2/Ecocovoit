@@ -72,3 +72,5 @@
 - Added the vehicle.js file to the routes folder.
 - Added the vehicle routes to the app.js file.
 - Integration of a Swagger documentation for the API.
+
+### Joseph
