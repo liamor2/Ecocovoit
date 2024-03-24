@@ -1,6 +1,6 @@
 # Work Log
 
-## 2024-03-21
+## Sprint 1
 
 ### Liam
 
