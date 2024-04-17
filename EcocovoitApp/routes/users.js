@@ -24,7 +24,8 @@ router.post('/api/users', (req, res) => {
   var user = new userSchema({
     email: req.body.email,
     password: req.body.password,
-    points: req.body.points
+    username: req.body.username,
+    address: req.body.address,
   });
 
   user.save().then(user => {

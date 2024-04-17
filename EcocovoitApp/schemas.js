@@ -48,6 +48,7 @@ const vehicleSchema = new mongoose.Schema({
     name: String,
     type: String,
     seats: Number,
+    emmission: Number,
     options: [String],
     owner: {
         type: Schema.Types.ObjectId,

@@ -29,7 +29,8 @@ async function createExampleData() {
       date: new Date("2024-04-15"),
       seats: 3,
       driver: users[0]._id, // Assuming first user is the driver
-      passengers: [users[1]._id] // Assuming second user is a passenger
+      passengers: [users[1]._id], // Assuming second user is a passenger
+      vehicle: vehicles[0]._id // Assuming first vehicle is used
     },
     {
       departureLocation: "City B",
@@ -45,20 +46,23 @@ async function createExampleData() {
 
   const vehicles = await Vehicle.insertMany([
     {
-      name: 'Car 1',
+      name: 'Average Car',
       seats: 4,
       options: ['Air conditioning'],
+      emmission: 150,
       owner: users[0]._id
     },
     {
-      name: 'Car 2',
+      name: 'Light Car',
       seats: 2,
+      emmission: 100,
       options: ['Heated seats'],
       owner: users[1]._id
     },
     {
-      name: 'Car 3',
+      name: 'Large Car',
       seats: 6,
+      emmission: 200,
       options: ['Air conditioning', 'Heated seats'],
       owner: users[1]._id
     }
