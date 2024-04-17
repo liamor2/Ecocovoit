@@ -1,0 +1,149 @@
+:root {
+  --green: #A3FE74;
+  --white: #FFFFFF;
+  --black: #000000
+}
+
+/* Global reset */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  display: flex;
+  width: 96%;
+  height: 10vh;
+  padding: 1vh 2%;
+  justify-content: space-between;
+  align-items: center;
+}
+header div {
+  display: flex;
+  width: 40%;
+  justify-content: space-between;
+  align-items: center;
+}
+header div img {
+  height: 8vh;
+}
+header div h1 {
+  display: none
+}
+header a {
+  text-decoration: none;
+  color: var(--black);
+}
+
+/* Homepage */
+main {
+  display: flex;
+  width: 100%;
+  margin-top: 10vh;
+  align-items: center;
+}
+#home article:first-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  width: 40%;
+  height: 70vh;
+  padding: 5vh 0;
+  justify-content: center;
+  border-radius: 0 15px 15px 0;
+  background-color: var(--green);
+}
+#home article:first-of-type h2 {
+  width: 90%;
+  text-align: center;
+}
+#home article:first-of-type p {
+  width: 80%;
+}
+#home article:last-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  width: 60%;
+  justify-content: center;
+}
+#home article:last-of-type p {
+  width: 90%;
+  margin-bottom: 10vh;
+  text-align: center;
+  font-size: 2rem;
+}
+#home article:last-of-type img {
+  height: 65vh;
+}
+
+/* Login & Signup pages */
+#login article:first-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  width: 60%;
+  justify-content: center;
+}
+#login article:first-of-type p {
+  width: 90%;
+  margin-bottom: 10vh;
+  text-align: center;
+  font-size: 2rem;
+}
+#login article:first-of-type img {
+  height: 65vh;
+}
+#login article:last-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  width: 40%;
+  height: 70vh;
+  padding: 5vh 0;
+  justify-content: center;
+  border-radius: 15px 0 0 15px;
+  background-color: var(--green);
+}
+#login article:last-of-type h2 {
+  width: 90%;
+  text-align: center;
+}
+#login article:last-of-type form {
+  width: 70%;
+  justify-content: center;
+}
+#login article:last-of-type form p {
+  text-align: center;
+}
+#login article:last-of-type form p a {
+  color: var(--black);
+  font-style: italic;
+}
+#login article:last-of-type form label,
+#login article:last-of-type form input {
+  width: 100%;
+  margin-bottom: 2vh;
+  padding: .5vh 1%;
+  border-radius: 5px;
+  border: none;
+}
+#login article:last-of-type form input[type="submit"] {
+  width: 100%;
+  background-color: var(--black);
+  color: var(--white);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.tripComponent {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 3vh 0;
+
+}
+
+/* Footer */
+footer {
+  height: 8vh;
+  padding-top: 2vh;
+  margin-top: 5vh;
+  text-align: center;
+}
