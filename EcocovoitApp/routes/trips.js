@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Trips = require('../schemas').Trip
 var Vehicle = require('../schemas').Vehicle
+var User = require('../schemas').User
 const dotenv = require('dotenv');
 const axios = require('axios');
 const e = require('express');
@@ -49,7 +50,7 @@ router.post('/api/trips', (req, res) => {
   });
 });
 
-router.get('/api/trips/emission/:id', (req, res) => {
+router.get('/api/trips/details/:id', (req, res) => {
   Trips.findById(req.params.id)
     .populate('vehicle')
     .then(trip => {
@@ -68,12 +69,15 @@ router.get('/api/trips/emission/:id', (req, res) => {
 
       axios.get(url)
         .then(response => {
-          const distanceInfo = response.data.rows[0].elements[0].distance.value; // Distance in meters
-          const emissionRate = trip.vehicle.emmission; // Emission rate per km
-          const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2); // Calculate emissions
+          const distanceInfo = response.data.rows[0].elements[0].distance.value;
+          const emissionRate = trip.vehicle.emmission;
+          const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2);
 
           res.status(200).send({
+            distance: distanceInfo,
             emission: emissionInfo,
+            startLocation: trip.departureLocation,
+            startTime: trip.departureTime,
           });
         })
         .catch(error => {
@@ -106,9 +110,9 @@ router.get('/api/trips/baselineEmission/:id', (req, res) => {
 
       axios.get(url)
         .then(response => {
-          const distanceInfo = response.data.rows[0].elements[0].distance.value; // Distance in meters
-          const emissionRate = 200; // Emission rate per km
-          const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2); // Calculate emissions
+          const distanceInfo = response.data.rows[0].elements[0].distance.value;
+          const emissionRate = 200;
+          const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2);
           res.status(200).send({
             emission: emissionInfo,
           });
@@ -128,6 +132,9 @@ router.get('/api/trips/co2savings/:id', (req, res) => {
   Trips.findById(req.params.id)
     .populate('vehicle')
     .then(trip => {
+      console.log('trip', trip);
+      console.log('vehicle', trip.vehicle);
+      console.log('emission', trip.vehicle.emission);
       const params = {
         origins: encodeURIComponent(trip.departureLocation),
         destinations: encodeURIComponent(trip.destinationLocation),
@@ -140,19 +147,24 @@ router.get('/api/trips/co2savings/:id', (req, res) => {
 
       axios.get(url)
         .then(response => {
-          const distanceInfo = response.data.rows[0].elements[0].distance.value; // Distance in meters
-          const emissionRate = trip.vehicle.emmission; // Emission rate per km
-          const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2); // Calculate emissions
-          const emissionPerPassenger = emissionInfo / trip.seats; // Calculate emissions per passenger
+          const distanceInfo = response.data.rows[0].elements[0].distance.value;
+          const emissionRate = trip.vehicle.emmission;
+          const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2);
+          const emissionPerPassenger = emissionInfo / trip.seats;
 
-          const baselineEmission = ((distanceInfo / 1000) * 150).toFixed(2); // Calculate baseline emissions
-          const co2Savings = (baselineEmission - emissionPerPassenger).toFixed(0); // Calculate CO2 savings
+          const baselineEmission = ((distanceInfo / 1000) * 150).toFixed(2);
+          const co2Savings = (baselineEmission - emissionPerPassenger).toFixed(0);
+
+          const passengerPoints = Math.round(co2Savings);
+          const driverPoints = Math.round((+co2Savings * 1.2) + (trip.seats - 1) * 0.1 * co2Savings);
 
           res.status(200).send({
             emission: emissionInfo,
             baselineEmission: baselineEmission,
-            emimssionPerPassenger: emissionPerPassenger,
+            emissionPerPassenger: emissionPerPassenger,
             co2Savings: co2Savings,
+            pointsPerPassenger: passengerPoints,
+            pointsForDriver: driverPoints
           });
         })
         .catch(error => {
@@ -166,6 +178,68 @@ router.get('/api/trips/co2savings/:id', (req, res) => {
     });
 
 });
+
+router.get('/api/trips/calculateAndAddPoints/:id', (req, res) => {
+  Trips.findById(req.params.id)
+    .populate('vehicle')
+    .populate('driver')
+    .populate('passengers')
+    .then(trip => {
+      const params = {
+        origins: encodeURIComponent(trip.departureLocation),
+        destinations: encodeURIComponent(trip.destinationLocation),
+        mode: 'driving',
+        key: process.env.GOOGLE_API_KEY,
+        units: 'metric'
+      };
+
+      const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${params.origins}&destinations=${params.destinations}&mode=${params.mode}&key=${params.key}&units=${params.units}`;
+
+      axios.get(url)
+        .then(response => {
+          const distanceInfo = response.data.rows[0].elements[0].distance.value;
+          const emissionRate = trip.vehicle.emmission;
+          const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2);
+          const emissionPerPassenger = emissionInfo / trip.seats;
+
+          const baselineEmission = ((distanceInfo / 1000) * 150).toFixed(2);
+          const co2Savings = (baselineEmission - emissionPerPassenger).toFixed(0);
+
+          const passengerPoints = Math.round(co2Savings);
+          const driverPoints = Math.round((+co2Savings * 1.2) + (trip.seats - 1) * 0.1 * co2Savings);
+          console.log(trip.passengers)
+          const updatePassengersPoints = trip.passengers.map(passenger => 
+            User.findByIdAndUpdate(passenger._id, { $inc: { points: passengerPoints } }, { new: true })
+          );
+          const updateDriverPoints = User.findByIdAndUpdate(trip.driver._id, { $inc: { points: driverPoints } }, { new: true });
+
+          Promise.all([...updatePassengersPoints, updateDriverPoints])
+            .then(() => {
+              res.status(200).send({
+                emission: emissionInfo,
+                baselineEmission: baselineEmission,
+                emissionPerPassenger: emissionPerPassenger,
+                co2Savings: co2Savings,
+                pointsPerPassenger: passengerPoints,
+                pointsForDriver: driverPoints
+              });
+            })
+            .catch(error => {
+              console.error('Error updating user points', error);
+              res.status(500).send('Failed to update user points');
+            });
+        })
+        .catch(error => {
+          console.error('Error calling the Google Distance Matrix API', error);
+          res.status(500).send('Failed to retrieve distance information');
+        });
+    })
+    .catch(err => {
+      console.error('Error finding trip', err);
+      res.status(500).send('Error retrieving trip details');
+    });
+});
+
 
 router.put('/api/trips/:id', (req, res) => {
   Trips.findByIdAndUpdate
@@ -221,12 +295,12 @@ router.get('/api/trips/price/:id', (req, res) => {
 
       axios.get(url)
         .then(response => {
-          const distanceInfo = response.data.rows[0].elements[0].distance.value; // Distance in meters
-          const averageFuelConsumption = 8; // Average fuel consumption per 100 km
-          const fuelPrice = 1.5; // Fuel price per liter
-          const pricePerKm = (averageFuelConsumption / 100) * fuelPrice; // Price per km
-          const priceInfo = ((distanceInfo / 1000) * pricePerKm).toFixed(2); // Calculate price
-          const pricePerPerson = (priceInfo / trip.seats).toFixed(2); // Calculate price per person
+          const distanceInfo = response.data.rows[0].elements[0].distance.value;
+          const averageFuelConsumption = 8; 
+          const fuelPrice = 1.5; 
+          const pricePerKm = (averageFuelConsumption / 100) * fuelPrice; 
+          const priceInfo = ((distanceInfo / 1000) * pricePerKm).toFixed(2); 
+          const pricePerPerson = (priceInfo / trip.seats).toFixed(2); 
 
           res.status(200).send({
             price: pricePerPerson,

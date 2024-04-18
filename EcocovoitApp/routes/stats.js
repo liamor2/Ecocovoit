@@ -74,7 +74,7 @@ router.get('/api/stats/allSiteStats', async (req, res) => {
     try {
         // Retrieve all trips and populate vehicle details
         const trips = await Trips.find().populate('vehicle');
-
+        console.log(trips);
         // Calculate emissions and CO2 savings for each trip
         const results = await Promise.all(trips.map(async trip => {
             const params = {
@@ -84,23 +84,23 @@ router.get('/api/stats/allSiteStats', async (req, res) => {
                 key: process.env.GOOGLE_API_KEY,
                 units: 'metric'
             };
-
+            console.log(params);
             const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${params.origins}&destinations=${params.destinations}&mode=${params.mode}&key=${params.key}&units=${params.units}`;
 
             const response = await axios.get(url);
             const distanceInfo = response.data.rows[0].elements[0].distance.value;
             const emissionRate = trip.vehicle.emmission;
             const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2);
-            const emissionPerPassenger = emissionInfo / trip.seats;
-
-            const baselineEmission = ((distanceInfo / 1000) * 150).toFixed(2);
+            const emissionPerPassenger = emissionInfo / (trip.passengers.length+1);
+            const baselineEmission = ((distanceInfo / 1000) * 120).toFixed(2);
             const co2Savings = (baselineEmission - emissionPerPassenger).toFixed(0);
 
             return { co2Savings: parseInt(co2Savings), distanceInfo };
         }));
 
+
         // Calculate total CO2 savings and total distance
-        const totalCo2Savings = (results.reduce((acc, curr) => acc + curr.co2Savings, 0))/1000 + " Kg";
+        const totalCo2Savings = ((results.reduce((acc, curr) => acc + curr.co2Savings, 0))/1000).toFixed(2) + " Kg";
         const totalDistance = ((results.reduce((acc, curr) => acc + curr.distanceInfo, 0)) / 1000).toFixed(2) + " Km";
         const numberOfTrips = results.length + " Trips";
 
@@ -120,9 +120,6 @@ router.get('/api/stats/allSiteStats', async (req, res) => {
         res.status(500).send('Failed to retrieve site statistics');
     }
 });
-
-
-module.exports = router;
 
 
 module.exports = router;
