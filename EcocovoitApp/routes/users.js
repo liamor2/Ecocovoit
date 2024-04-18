@@ -157,7 +157,7 @@ router.post('/api/signup', (req, res) => {
   user.save().then(user => {
     const token = jwt.sign({user}, process.env.SECRET_KEY);
     res.status(200).send({token});
-  }).catch(err => {
+  }).catch(() => {
     res.status(500).send('Error');
   });
 });
