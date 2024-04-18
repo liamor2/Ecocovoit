@@ -22,6 +22,16 @@ router.get('/api/users/:id', (req, res) => {
   });
 });
 
+router.get('/api/users/:id/points', (req, res) => {
+  User.findById(req.params.id).then(user => {
+    const points = user.points;
+    res.status(200).send({points});
+  }).catch(err => {
+    res.status(500).send('Error');
+  });
+});
+
+
 router.post('/api/users', (req, res) => {
   var user = new userSchema({
     email: req.body.email,
@@ -54,6 +64,15 @@ router.delete('/api/users/:id', (req, res) => {
     res.status(500).send('Error');
   });
 });
+
+router.get('/api/users/:id/trips', (req, res) => {
+  User.findById(req.params.id).populate('trips').then(user => {
+    res.status(200).send(user.trips);
+  }).catch(err => {
+    res.status(500).send('Error');
+  });
+});
+
 
 module.exports = router;
 
