@@ -128,9 +128,6 @@ router.get('/api/trips/co2savings/:id', (req, res) => {
   Trips.findById(req.params.id)
     .populate('vehicle')
     .then(trip => {
-      console.log('trip', trip);
-      console.log('vehicle', trip.vehicle);
-      console.log('emisison', trip.vehicle.emission);
       const params = {
         origins: encodeURIComponent(trip.departureLocation),
         destinations: encodeURIComponent(trip.destinationLocation),
@@ -229,9 +226,10 @@ router.get('/api/trips/price/:id', (req, res) => {
           const fuelPrice = 1.5; // Fuel price per liter
           const pricePerKm = (averageFuelConsumption / 100) * fuelPrice; // Price per km
           const priceInfo = ((distanceInfo / 1000) * pricePerKm).toFixed(2); // Calculate price
+          const pricePerPerson = (priceInfo / trip.seats).toFixed(2); // Calculate price per person
 
           res.status(200).send({
-            price: priceInfo,
+            price: pricePerPerson,
           });
         })
         .catch(error => {

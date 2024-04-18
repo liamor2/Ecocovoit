@@ -19,31 +19,6 @@ async function createExampleData() {
     { username: 'Alex Smith', email: 'alex.smith@gmail.com', address: '789 Oak St, City C', password: await bcrypt.hash('password3', salt), points: 0, role: 0 }
   ]);
 
-  // Create example trips with references to the created users
-  const trips = await Trip.insertMany([
-    {
-      departureLocation: "18 Rue de la République 69002 Lyon",
-      departureTime: new Date("2024-04-15T07:00:00Z"),
-      destinationLocation: "15 Av Jean Médecin 06000 Nice",
-      destinationTime: new Date("2024-04-15T09:00:00Z"),
-      date: new Date("2024-04-15"),
-      seats: 3,
-      driver: users[0]._id, // Assuming first user is the driver
-      passengers: [users[1]._id], // Assuming second user is a passenger
-      vehicle: vehicles[0]._id // Assuming first vehicle is used
-    },
-    {
-      departureLocation: "47 Bd de Sébastopol 75001 Paris",
-      departureTime: new Date("2024-04-20T10:00:00Z"),
-      destinationLocation: "54 Av de la République 44600 Saint-Nazaire",
-      destinationTime: new Date("2024-04-20T12:30:00Z"),
-      date: new Date("2024-04-20"),
-      seats: 2,
-      driver: users[1]._id, // Assuming second user is the driver now
-      passengers: [users[2]._id] // Assuming third user is a passenger
-    }
-  ]);
-
   const vehicles = await Vehicle.insertMany([
     {
       name: 'Average Car',
@@ -65,8 +40,43 @@ async function createExampleData() {
       emmission: 200,
       options: ['Air conditioning', 'Heated seats'],
       owner: users[1]._id
+    },
+    {
+      name: 'Electric Car',
+      seats: 4,
+      emmission: 0,
+      options: ['Air conditioning'],
+      owner: users[2]._id
     }
   ]);
+
+  // Create example trips with references to the created users
+  const trips = await Trip.insertMany([
+    {
+      departureLocation: "18 Rue de la République 69002 Lyon",
+      departureTime: new Date("2024-04-15T07:00:00Z"),
+      destinationLocation: "15 Av Jean Médecin 06000 Nice",
+      destinationTime: new Date("2024-04-15T09:00:00Z"),
+      date: new Date("2024-04-15"),
+      seats: 3,
+      driver: users[0]._id, // Assuming first user is the driver
+      passengers: [users[1]._id], // Assuming second user is a passenger
+      vehicle: vehicles[0]._id // Assuming first vehicle is used
+    },
+    {
+      departureLocation: "47 Bd de Sébastopol 75001 Paris",
+      departureTime: new Date("2024-04-20T10:00:00Z"),
+      destinationLocation: "54 Av de la République 44600 Saint-Nazaire",
+      destinationTime: new Date("2024-04-20T12:30:00Z"),
+      date: new Date("2024-04-20"),
+      seats: 2,
+      driver: users[1]._id, // Assuming second user is the driver now
+      passengers: [users[2]._id], // Assuming third user is a passenger
+      vehicle: vehicles[1]._id // Assuming second vehicle is used
+    }
+  ]);
+
+
 
 
 
