@@ -199,18 +199,19 @@ router.get('/api/trips/calculateAndAddPoints/:id', (req, res) => {
         .then(response => {
           const distanceInfo = response.data.rows[0].elements[0].distance.value;
           const emissionRate = trip.vehicle.emmission;
-          const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2);
-          const emissionPerPassenger = emissionInfo / trip.seats;
+          const emissionInfo = ((distanceInfo / 1000) * emissionRate);
+          const emissionPerPassenger = emissionInfo / (trip.passengers.length +1);
 
-          const baselineEmission = ((distanceInfo / 1000) * 150).toFixed(2);
-          const co2Savings = (baselineEmission - emissionPerPassenger).toFixed(0);
+          const baselineEmission = ((distanceInfo / 1000) * 120);
+          const co2Savings = (baselineEmission - emissionPerPassenger);
 
           const passengerPoints = Math.round(co2Savings);
-          const driverPoints = Math.round((+co2Savings * 1.2) + (trip.seats - 1) * 0.1 * co2Savings);
-          console.log(trip.passengers)
+          const driverPoints = Math.round((co2Savings * 1.2) + (trip.passengers.length - 1) * 0.1 * co2Savings);
+
           const updatePassengersPoints = trip.passengers.map(passenger => 
             User.findByIdAndUpdate(passenger._id, { $inc: { points: passengerPoints } }, { new: true })
           );
+
           const updateDriverPoints = User.findByIdAndUpdate(trip.driver._id, { $inc: { points: driverPoints } }, { new: true });
 
           Promise.all([...updatePassengersPoints, updateDriverPoints])
@@ -263,7 +264,7 @@ router.delete('/api/trips/:id', (req, res) => {
 router.put('/api/trips/addPassenger/:id', (req, res) => {
   Trips.findById(req.params.id)
     .then(trip => {
-      if (trip.passengers.length < trip.availableSeats) {
+      if (trip.passengers.length <= trip.availableSeats) {
         Trips.findByIdAndUpdate(req.params.id, { $push: { passengers: req.body.passenger } }, { new: true })
           .then(updatedTrip => {
             res.status(200).send(updatedTrip);
