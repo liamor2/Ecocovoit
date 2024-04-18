@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
-const { User, Trip, Vehicle } = require('./schemas');
+const { User, Trip, Vehicle, Reward } = require('./schemas');
 
 dotenv.config();
 
@@ -68,6 +68,8 @@ async function createExampleData() {
     }
   ]);
 
+
+
   // Update users with their trips
   await Promise.all(users.map(async (user, index) => {
     user.trips = trips.filter(trip => trip.driver.toString() === user._id.toString()).map(trip => trip._id);
@@ -92,6 +94,25 @@ async function createExampleData() {
     trip.passengers = trip.passengers.map(passenger => users.find(user => user._id.toString() === passenger.toString())._id);
     await trip.save();
   }));
+
+  const rewards = await Reward.insertMany([
+    {
+      name: 'Café offert',
+      points: 1000,
+      description: 'Venez prendre un café chez nos stations essences partenaires, c\'est nous qui payons!'
+    },
+    {
+      name: 'RéductionPneus',
+      points: 2000,
+      description: '20% de réduction sur votre prochain changement de pneus'
+    },
+    {
+      name: '50km de Covoiturage offert',
+      points: 50000
+    }
+  ]);
+
+
 
   console.log('Example data has been added to the ecocovoit database.');
 }

@@ -56,8 +56,15 @@ const vehicleSchema = new mongoose.Schema({
     }
 });
 
+const rewardsSchema = new mongoose.Schema({
+    name: String,
+    points: Number,
+    description: String
+});
+
 module.exports = {
     Trip: mongoose.model('Trip', tripSchema),
     User: mongoose.model('User', userSchema),
-    Vehicle: mongoose.model('Vehicle', vehicleSchema)
+    Vehicle: mongoose.model('Vehicle', vehicleSchema),
+    Reward: mongoose.model('Reward', rewardsSchema)
 };
