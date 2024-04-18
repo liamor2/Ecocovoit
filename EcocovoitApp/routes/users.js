@@ -130,7 +130,7 @@ router.get('/api/users/:id/redeemGift/:giftID', async (req, res) => {
 
 router.post('/api/login', (req, res) => {
   User.findOne({email: req.body.email}).then(user => {
-    if(bcrypt.compare(req.body.password, user.password)){
+    if(user && bcrypt.compareSync(req.body.password, user.password)){
       const token = jwt.sign({user}, process.env.SECRET_KEY);
       res.status(200).send({token});
     }else{
