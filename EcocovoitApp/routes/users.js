@@ -6,6 +6,9 @@ var Reward = require('../schemas').Reward
 var bcrypt = require('bcryptjs');
 const axios = require('axios');
 
+var dotenv = require('dotenv');
+dotenv.config();
+
 var salt = bcrypt.genSaltSync(10);
 router.use(express.json());
 
@@ -128,20 +131,30 @@ router.get('/api/users/:id/redeemGift/:giftID', async (req, res) => {
   }
 });
 
-router.post('/api/login', (req, res) => {
-  User.findOne({email: req.body.email}).then(user => {
-    if(bcrypt.compare(req.body.password, user.password)){
-      const token = jwt.sign({user}, process.env.SECRET_KEY);
-      res.status(200).send({token});
-    }else{
-      res.status(401).send('Wrong password');
+router.post('/api/users/login', (req, res) => {
+  User.findOne({ email: req.body.email }).then(user => {
+    if (!user) {
+      return res.status(404).send('User not found');
     }
-  }).catch(err => {
-    res.status(500).send('Error');
+    bcrypt.compare(req.body.password, user.password).then(isMatch => {
+      if (isMatch) {
+        const token = jwt.sign({ user }, process.env.SECRET_KEY);
+        res.status(200).send({ token });
+      } else {
+        res.status(401).send('Wrong password');
+      }
+    }).catch(bcryptError => {
+      console.error(bcryptError);
+      res.status(500).send('Error during password validation');
+    });
+  }).catch(dbError => {
+    console.error(dbError);
+    res.status(500).send('Database error');
   });
 });
 
-router.post('/api/signup', (req, res) => {
+
+router.post('/api/users/signup', (req, res) => {
   var user = new User({
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, salt),
