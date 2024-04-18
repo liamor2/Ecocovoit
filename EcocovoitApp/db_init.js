@@ -22,9 +22,9 @@ async function createExampleData() {
   // Create example trips with references to the created users
   const trips = await Trip.insertMany([
     {
-      departureLocation: "City A",
+      departureLocation: "18 Rue de la République 69002 Lyon",
       departureTime: new Date("2024-04-15T07:00:00Z"),
-      destinationLocation: "City B",
+      destinationLocation: "15 Av Jean Médecin 06000 Nice",
       destinationTime: new Date("2024-04-15T09:00:00Z"),
       date: new Date("2024-04-15"),
       seats: 3,
@@ -33,9 +33,9 @@ async function createExampleData() {
       vehicle: vehicles[0]._id // Assuming first vehicle is used
     },
     {
-      departureLocation: "City B",
+      departureLocation: "47 Bd de Sébastopol 75001 Paris",
       departureTime: new Date("2024-04-20T10:00:00Z"),
-      destinationLocation: "City C",
+      destinationLocation: "54 Av de la République 44600 Saint-Nazaire",
       destinationTime: new Date("2024-04-20T12:30:00Z"),
       date: new Date("2024-04-20"),
       seats: 2,
