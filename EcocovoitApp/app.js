@@ -18,6 +18,7 @@ const indexRouter = require('./routes/index');
 const tripsRouter = require('./routes/trips');
 const usersRouter = require('./routes/users');
 const vehicleRouter = require('./routes/vehicle');
+const statsRouter = require('./routes/stats');
 
 // Middleware
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -37,7 +38,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('Could not connect to MongoDB', err));
 
 // Use the routers
-app.use('/', indexRouter, tripsRouter, usersRouter, vehicleRouter);
+app.use('/', indexRouter, tripsRouter, usersRouter, vehicleRouter, statsRouter);
 
 
 // Start the server

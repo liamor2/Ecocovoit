@@ -2,7 +2,11 @@ var express = require('express');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var User = require('../schemas').User
+var Reward = require('../schemas').Reward
+var bcrypt = require('bcryptjs');
+const axios = require('axios');
 
+var salt = bcrypt.genSaltSync(10);
 router.use(express.json());
 
 router.get('/api/users',(req,res) => {
@@ -21,15 +25,26 @@ router.get('/api/users/:id', (req, res) => {
   });
 });
 
+router.get('/api/users/:id/points', (req, res) => {
+  User.findById(req.params.id).then(user => {
+    const points = user.points;
+    res.status(200).send({points});
+  }).catch(err => {
+    res.status(500).send('Error');
+  });
+});
+
+
 router.post('/api/users', (req, res) => {
   var user = new userSchema({
     email: req.body.email,
-    password: req.body.password,
-    points: req.body.points
+    password: bcrypt.hash(req.body.password, salt),
+    username: req.body.username,
+    address: req.body.address,
   });
 
   user.save().then(user => {
-    res.status(200).send(user);
+    res.status(200).send('User created');
   }).catch(err => {
     res.status(500).send('Error');
   });
@@ -37,7 +52,7 @@ router.post('/api/users', (req, res) => {
 
 router.put('/api/users/:id', (req, res) => {
   User.findByIdAndUpdate(req.params.id, req.body, { new: true }).then(user => {
-    res.status(200).send(user);
+    res.status(200).send('user updated');
   }).catch(err => {
     res.status(500).send('Error');
   });
@@ -52,6 +67,71 @@ router.delete('/api/users/:id', (req, res) => {
     res.status(500).send('Error');
   });
 });
+
+router.get('/api/users/:id/tripHistory', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate({
+      path: 'trips',
+      populate: { path: 'vehicle' }
+    });
+
+    const tripDetails = await Promise.all(user.trips.map(async trip => {
+      const params = {
+        origins: encodeURIComponent(trip.departureLocation),
+        destinations: encodeURIComponent(trip.destinationLocation),
+        mode: 'driving',
+        key: process.env.GOOGLE_API_KEY,
+        units: 'metric'
+      };
+      
+      const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${params.origins}&destinations=${params.destinations}&mode=${params.mode}&key=${params.key}&units=${params.units}`;
+      const response = await axios.get(url);
+
+      const distanceInfo = response.data.rows[0].elements[0].distance.value;
+      const emissionRate = trip.vehicle.emmission;
+      const emissionInfo = ((distanceInfo / 1000) * emissionRate).toFixed(2);
+
+      return {
+        id: trip._id,
+        vehicle: trip.vehicle,
+        emission: emissionInfo,
+        distance: distanceInfo,
+        startLocation: trip.departureLocation,
+        startTime: trip.departureTime
+      };
+    }));
+
+    res.status(200).send(tripDetails);
+  } catch (err) {
+    console.error('Error retrieving trip history', err);
+    res.status(500).send('Error retrieving trip history');
+  }
+});
+
+
+router.post('/api/users/:id/redeemGift/:giftID', (req, res) => {
+  User.findById(req.params.id).then(user => {
+    Reward.findById(req.params.giftID).then(reward => {
+      if(user.points >= reward.points){
+        user.points -= reward.points;
+        user.save().then(user => {
+          user.redeemedRewards.push(reward);
+          res.status(200).send(user);
+        }).catch(err => {
+          res.status(500).send('Error');
+        });
+      }else{
+        res.status(403).send('Not enough points');
+      }
+    }
+    ).catch(err => {
+      res.status(500).send('Error');
+    });
+  }).catch(err => {
+    res.status(500).send('Error');
+  });
+});
+
 
 module.exports = router;
 

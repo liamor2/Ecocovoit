@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema({
     password: String,
     points: Number,
     role: Number,
+    redeemedRewards: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Reward'
+    }],
     trips: [{
         type: Schema.Types.ObjectId,
         ref: 'Trip'
@@ -48,6 +52,7 @@ const vehicleSchema = new mongoose.Schema({
     name: String,
     type: String,
     seats: Number,
+    emmission: Number, //g(CO2)/KM
     options: [String],
     owner: {
         type: Schema.Types.ObjectId,
@@ -55,8 +60,15 @@ const vehicleSchema = new mongoose.Schema({
     }
 });
 
+const rewardsSchema = new mongoose.Schema({
+    name: String,
+    points: Number,
+    description: String
+});
+
 module.exports = {
     Trip: mongoose.model('Trip', tripSchema),
     User: mongoose.model('User', userSchema),
-    Vehicle: mongoose.model('Vehicle', vehicleSchema)
+    Vehicle: mongoose.model('Vehicle', vehicleSchema),
+    Reward: mongoose.model('Reward', rewardsSchema)
 };
