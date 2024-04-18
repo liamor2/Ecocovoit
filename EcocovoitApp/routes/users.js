@@ -1,7 +1,9 @@
 var express = require('express');
 var router = express.Router();
 var User = require('../schemas').User
+var bcrypt = require('bcryptjs');
 
+var salt = bcrypt.genSaltSync(10);
 router.use(express.json());
 
 router.get('/api/users',(req,res) => {
@@ -23,7 +25,7 @@ router.get('/api/users/:id', (req, res) => {
 router.post('/api/users', (req, res) => {
   var user = new userSchema({
     email: req.body.email,
-    password: req.body.password,
+    password: bcrypt.hash(req.body.password, salt),
     username: req.body.username,
     address: req.body.address,
   });

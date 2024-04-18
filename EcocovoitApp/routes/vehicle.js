@@ -25,6 +25,7 @@ router.post('/api/vehicles', (req, res) => {
         name: req.body.name,
         seats: req.body.seats,
         options: req.body.options,
+        emmission: req.body.emmission,
         owner: req.body.owner
     });
 

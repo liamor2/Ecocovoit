@@ -189,6 +189,59 @@ router.delete('/api/trips/:id', (req, res) => {
   });
 });
 
+router.put('/api/trips/addPassenger/:id', (req, res) => {
+  Trips.findById(req.params.id)
+    .then(trip => {
+      if (trip.passengers.length < trip.availableSeats) {
+        Trips.findByIdAndUpdate(req.params.id, { $push: { passengers: req.body.passenger } }, { new: true })
+          .then(updatedTrip => {
+            res.status(200).send(updatedTrip);
+          })
+          .catch(err => {
+            res.status(500).send('Error updating trip');
+          });
+      } else {
+        res.status(400).send('No available seats to add a new passenger');
+      }
+    })
+    .catch(err => {
+      res.status(500).send('Error finding trip');
+    });
+});
+
+router.get('/api/trips/price/:id', (req, res) => {
+  Trips.findById(req.params.id)
+    .then(trip => {
+      const params = {
+        origins: encodeURIComponent(trip.departureLocation),
+        destinations: encodeURIComponent(trip.destinationLocation),
+        mode: 'driving',
+        key: process.env.GOOGLE_API_KEY,
+        units: 'metric'
+      };
+
+      const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${params.origins}&destinations=${params.destinations}&mode=${params.mode}&key=${params.key}&units=${params.units}`;
+
+      axios.get(url)
+        .then(response => {
+          const distanceInfo = response.data.rows[0].elements[0].distance.value; // Distance in meters
+          const averageFuelConsumption = 8; // Average fuel consumption per 100 km
+          const fuelPrice = 1.5; // Fuel price per liter
+          const pricePerKm = (averageFuelConsumption / 100) * fuelPrice; // Price per km
+          const priceInfo = ((distanceInfo / 1000) * pricePerKm).toFixed(2); // Calculate price
+
+          res.status(200).send({
+            price: priceInfo,
+          });
+        })
+        .catch(error => {
+          console.error('Error calling the Google Distance Matrix API', error);
+          res.status(500).send('Failed to retrieve distance information');
+        });
+    })
+});
+
+
 module.exports = router;
 
 /**
@@ -338,4 +391,36 @@ module.exports = router;
 *         description: Successful operation
 *       '500':
 *         description: Error
+*
+* /api/trips/addPassenger/:id:
+*   put:
+*     tags:
+*       - Trips
+*     description: Add a passenger to a trip by ID if available seats exist. Returns an error if no seats are available.
+*     parameters:
+*       - name: id
+*         in: path
+*         description: ID of the trip to which a passenger will be added
+*         required: true
+*         schema:
+*           type: string
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             properties:
+*               passenger:
+*                 type: string
+*                 description: ID of the passenger to add
+*     responses:
+*       '200':
+*         description: Passenger added successfully and returns the updated trip
+*       '400':
+*         description: No available seats to add a new passenger
+*       '500':
+*         description: Error finding or updating trip
+*
+*
  */
