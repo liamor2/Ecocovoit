@@ -45,11 +45,11 @@ router.get('/api/stats/total-distance', (req, res) => {
                 const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${params.origins}&destinations=${params.destinations}&mode=${params.mode}&key=${params.key}&units=${params.units}`;
 
                 return axios.get(url).then(response => {
-                    const distanceInfo = response.data.rows[0].elements[0].distance.value; // Distance in meters
-                    return distanceInfo / 1000; // Convert to km and return
+                    const distanceInfo = response.data.rows[0].elements[0].distance.value; 
+                    return distanceInfo / 1000; 
                 }).catch(error => {
                     console.error('Error calling the Google Distance Matrix API for trip:', trip._id, error);
-                    return 0; // Return 0 distance in case of error
+                    return 0; 
                 });
             });
 
@@ -72,10 +72,9 @@ router.get('/api/stats/total-distance', (req, res) => {
 
 router.get('/api/stats/allSiteStats', async (req, res) => {
     try {
-        // Retrieve all trips and populate vehicle details
+       
         const trips = await Trips.find().populate('vehicle');
         console.log(trips);
-        // Calculate emissions and CO2 savings for each trip
         const results = await Promise.all(trips.map(async trip => {
             const params = {
                 origins: encodeURIComponent(trip.departureLocation),
@@ -98,16 +97,12 @@ router.get('/api/stats/allSiteStats', async (req, res) => {
             return { co2Savings: parseInt(co2Savings), distanceInfo };
         }));
 
-
-        // Calculate total CO2 savings and total distance
         const totalCo2Savings = ((results.reduce((acc, curr) => acc + curr.co2Savings, 0))/1000).toFixed(2) + " Kg";
         const totalDistance = ((results.reduce((acc, curr) => acc + curr.distanceInfo, 0)) / 1000).toFixed(2) + " Km";
         const numberOfTrips = results.length + " Trips";
 
-        // Retrieve total number of users
         const userCount = await User.countDocuments({}) + " Users";
 
-        // Send all statistics as a response
         res.status(200).send({
             totalCo2Savings,
             totalDistance,
