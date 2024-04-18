@@ -97,7 +97,7 @@ async function createExampleData() {
 
   const rewards = await Reward.insertMany([
     {
-      name: 'Café offert',
+      name: 'Café',
       points: 1000,
       description: 'Venez prendre un café chez nos stations essences partenaires, c\'est nous qui payons!'
     },
@@ -107,8 +107,9 @@ async function createExampleData() {
       description: '20% de réduction sur votre prochain changement de pneus'
     },
     {
-      name: '50km de Covoiturage offert',
-      points: 50000
+      name: '50kmOffert',
+      points: 50000,
+      description: '50km de covoiturage offert pour votre prochain trajet'
     }
   ]);
 
