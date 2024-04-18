@@ -109,27 +109,23 @@ router.get('/api/users/:id/tripHistory', async (req, res) => {
 });
 
 
-router.post('/api/users/:id/redeemGift/:giftID', (req, res) => {
-  User.findById(req.params.id).then(user => {
-    Reward.findById(req.params.giftID).then(reward => {
-      if(user.points >= reward.points){
-        user.points -= reward.points;
-        user.save().then(user => {
-          user.redeemedRewards.push(reward);
-          res.status(200).send(user);
-        }).catch(err => {
-          res.status(500).send('Error');
-        });
-      }else{
-        res.status(403).send('Not enough points');
-      }
+router.get('/api/users/:id/redeemGift/:giftID', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const reward = await Reward.findById(req.params.giftID);
+
+    if (user.points >= reward.points) {
+      user.points -= reward.points; 
+      user.redeemedRewards.push(req.params.giftID);
+
+      await user.save();
+      res.status(200).send('Reward redeemed');
+    } else {
+      res.status(403).send('Not enough points');
     }
-    ).catch(err => {
-      res.status(500).send('Error');
-    });
-  }).catch(err => {
+  } catch (err) {
     res.status(500).send('Error');
-  });
+  }
 });
 
 router.post('/api/login', (req, res) => {
